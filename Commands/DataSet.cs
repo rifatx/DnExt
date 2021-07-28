@@ -21,7 +21,6 @@ namespace DnExt.Commands
             public string Address { get; set; }
         }
 
-        // todo: limit # of rows
         public static string DumpDataTable(this DataTarget dataTarget, string args)
         {
             if (args.ParseAsCommandLine<DumpDataTableOptions>() is var clo && !clo.IsValid)
@@ -80,12 +79,24 @@ namespace DnExt.Commands
 
                 for (int j = 0; j < Math.Min(rowCount, options.MaxRows); j++)
                 {
-                    colData.Add(colValueArray.Type.GetArrayElementValue(colValueArray.Address, j)?.ToString());
+                    object? colValue;
+
+                    try
+                    {
+                        colValue = colValueArray.Type.GetArrayElementValue(colValueArray.Address, j)?.ToString();
+                    }
+                    catch
+                    {
+                        var colValueAddress = colValueArray.Type.GetArrayElementAddress(colValueArray.Address, j);
+                        colValue = OutputHelper.MakeDml($"db {rt.DataTarget.FormatAddress(colValueAddress)}", $"{rt.DataTarget.FormatAddress(colValueAddress)} ({colValueArray.Type})");
+                    }
+
+                    colData.Add(colValue?.ToString() ?? string.Empty);
                 }
 
                 var maxLen = colData
                     .Where(s => !string.IsNullOrEmpty(s))
-                    .Select(s => s.Length)
+                    .Select(s => OutputHelper.GetDmlInnerText(s).Length)
                     .Max();
 
                 colData.Insert(1, new string('─', maxLen));

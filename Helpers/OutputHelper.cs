@@ -1,10 +1,13 @@
 ﻿using Microsoft.Diagnostics.Runtime;
 using System;
+using System.Text.RegularExpressions;
 
 namespace DnExt.Helpers
 {
     internal static class OutputHelper
     {
+        private static Regex _dmlRegex = new Regex("<link cmd=\".*\">(.*)</link>");
+
         internal static string FormatAddress(this DataTarget dataTarget, ulong addr)
         {
             switch (dataTarget.Architecture)
@@ -25,6 +28,12 @@ namespace DnExt.Helpers
                 .FormatAddress(addr);
 
         internal static string MakeDml(string command, string text, string rest = null) => @$"<link cmd=""{command}"">{text}</link>{rest}";
+
+        internal static string GetDmlInnerText(string dml) =>
+            _dmlRegex.Match(dml) is var m
+            && m.Success
+        ? m.Groups[1].Value
+        : dml;
 
         internal static string CleanWindbgOutput(this string text) => text.Replace("%", "%%");
     }
