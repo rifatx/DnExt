@@ -88,7 +88,7 @@ namespace DnExt.Commands
 
                         var buffer = new byte[colValueArray.Type.ElementSize];
                         var res = rt.ReadMemory(colValueAddress, buffer, buffer.Length, out var bytesRead);
-                        var bufferRef = MemoryMarshal.GetReference(buffer.AsSpan());
+                        ref var bufferRef = ref MemoryMarshal.GetReference(buffer.AsSpan());
 
                         object colObj = colValueArray.Type.ToString().Replace("[]", string.Empty) switch
                         {
