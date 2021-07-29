@@ -12,6 +12,8 @@ namespace DnExt.Common
         {
             "Microsoft.Diagnostics.Runtime",
             "RGiesecke.DllExport.Metadata",
+            "System.Memory",
+            "System.Runtime.CompilerServices.Unsafe",
             "CommandLine"
         };
 

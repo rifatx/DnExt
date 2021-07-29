@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -81,14 +82,38 @@ namespace DnExt.Commands
                 {
                     object? colValue;
 
-                    try
-                    {
-                        colValue = colValueArray.Type.GetArrayElementValue(colValueArray.Address, j)?.ToString();
-                    }
-                    catch
+                    if (colValueArray.Type.ComponentType.IsValueClass)
                     {
                         var colValueAddress = colValueArray.Type.GetArrayElementAddress(colValueArray.Address, j);
-                        colValue = OutputHelper.MakeDml($"db {rt.DataTarget.FormatAddress(colValueAddress)}", $"{rt.DataTarget.FormatAddress(colValueAddress)} ({colValueArray.Type})");
+
+                        var buffer = new byte[colValueArray.Type.ElementSize];
+                        var res = rt.ReadMemory(colValueAddress, buffer, buffer.Length, out var bytesRead);
+                        var bufferRef = MemoryMarshal.GetReference(buffer.AsSpan());
+
+                        object colObj = colValueArray.Type.ToString().Replace("[]", string.Empty) switch
+                        {
+                            "System.Byte" => Unsafe.As<byte, byte>(ref bufferRef),
+                            "System.SByte" => Unsafe.As<byte, sbyte>(ref bufferRef),
+                            "System.Int16" => Unsafe.As<byte, short>(ref bufferRef),
+                            "System.UInt16" => Unsafe.As<byte, ushort>(ref bufferRef),
+                            "System.Int32" => Unsafe.As<byte, int>(ref bufferRef),
+                            "System.UInt32" => Unsafe.As<byte, uint>(ref bufferRef),
+                            "System.Int64" => Unsafe.As<byte, long>(ref bufferRef),
+                            "System.UInt64" => Unsafe.As<byte, ulong>(ref bufferRef),
+                            "System.Single" => Unsafe.As<byte, float>(ref bufferRef),
+                            "System.Double" => Unsafe.As<byte, double>(ref bufferRef),
+                            "System.Decimal" => Unsafe.As<byte, decimal>(ref bufferRef),
+                            "System.Char" => Unsafe.As<byte, char>(ref bufferRef),
+                            "System.Boolean" => Unsafe.As<byte, bool>(ref bufferRef),
+                            "System.DateTime" => Unsafe.As<byte, DateTime>(ref bufferRef),
+                            _ => OutputHelper.MakeDml($"db {rt.DataTarget.FormatAddress(colValueAddress)}", $"{rt.DataTarget.FormatAddress(colValueAddress)} ({colValueArray.Type.Name.Replace("[]", string.Empty)})")
+                        };
+
+                        colValue = colObj.ToString();
+                    }
+                    else
+                    {
+                        colValue = colValueArray.Type.GetArrayElementValue(colValueArray.Address, j)?.ToString();
                     }
 
                     colData.Add(colValue?.ToString() ?? string.Empty);
