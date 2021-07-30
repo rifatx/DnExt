@@ -36,11 +36,13 @@ namespace DnExt.Commands
             var rt = dataTarget.GetRuntime();
             var options = clo.Options;
             var matcher = new Matcher(options.IsRegex, options.FilterPattern);
-            var modules = rt.Modules.Select(m => new
-            {
-                Name = new FileInfo(m.AssemblyName).Name,
-                Module = m
-            });
+            var modules = rt.Modules
+                .Where(m => !string.IsNullOrEmpty(m.AssemblyName))
+                .Select(m => new
+                {
+                    Name = new FileInfo(m.AssemblyName).Name,
+                    Module = m
+                });
             var sbr = new StringBuilder();
 
             foreach (var m in modules.Where(m => matcher.IsMatch(m.Name)))
