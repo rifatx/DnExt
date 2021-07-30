@@ -1,11 +1,6 @@
 ﻿using Microsoft.Diagnostics.Runtime;
 using Microsoft.Diagnostics.Runtime.Interop;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DnExt.Helpers
 {
@@ -18,7 +13,7 @@ namespace DnExt.Helpers
 
             byte[] buffer = new byte[read];
             var res = default(T);
-         
+
             if (dds.ReadVirtual(address, buffer, read, out read) != 0)
             {
                 return res;

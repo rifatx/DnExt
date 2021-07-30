@@ -1,7 +1,6 @@
 ﻿using CommandLine;
 using DnExt.Helpers;
 using Microsoft.Diagnostics.Runtime;
-using RGiesecke.DllExport;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

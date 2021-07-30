@@ -8,6 +8,7 @@
 
 ### Modules
 - `!getmodules`: List and save loaded modules
+- `!savemanagedmodule`: Save a single module
 
 ### Managed Heap
 - `!heapstat`: Prints simple statistics about objects on heap

@@ -3,14 +3,11 @@ using DnExt.Commands.Utils;
 using DnExt.Helpers;
 using Microsoft.Diagnostics.Runtime;
 using Microsoft.Diagnostics.Runtime.Interop;
-using RGiesecke.DllExport;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DnExt.Commands
 {
@@ -18,15 +15,23 @@ namespace DnExt.Commands
     {
         class GetModulesOptions
         {
-            [Option('s', "saveto", HelpText = "Save module to disk")]
+            [Option('s', "saveto", HelpText = "Path to save module to disk")]
             public string SaveTo { get; set; }
-            [Option('p', "pattern", Required = false, HelpText = "Filter pattern for type names")]
+            [Option('p', "pattern", Required = false, HelpText = "Filter pattern for module names")]
             public string FilterPattern { get; set; }
             [Option('r', "regex", Required = false, Default = false, HelpText = "Enable/disable regex filtering")]
             public bool IsRegex { get; set; }
         }
 
-        public static string GetModules(this DataTarget dataTarget, string args)
+        class SaveModuleOptions
+        {
+            [Option('a', "address", Required = true, HelpText = "Module address")]
+            public string Address { get; set; }
+            [Option('s', "saveto", Required = true, HelpText = "Path to save module to disk")]
+            public string SaveTo { get; set; }
+        }
+
+        public static string GetModules(this DataTarget dataTarget, IntPtr clientPtr, string args)
         {
             if (args.ParseAsCommandLine<GetModulesOptions>() is var clo && !clo.IsValid)
             {
@@ -43,12 +48,14 @@ namespace DnExt.Commands
                     Name = new FileInfo(m.AssemblyName).Name,
                     Module = m
                 });
+
             var sbr = new StringBuilder();
+            var moduleSavePath = new FileInfo(DebugClientHelper.DumpFilePath).Directory;
 
             foreach (var m in modules.Where(m => matcher.IsMatch(m.Name)))
             {
                 var a = dataTarget.FormatAddress(m.Module.Address);
-                sbr.AppendLine($"{OutputHelper.MakeDml($"!dumpmodule -mt {a}", $"{a}", $": {m.Name}")}");
+                sbr.AppendLine($"{OutputHelper.MakeDml($"!dumpmodule -mt {a}", $"{a}", $": {m.Name}")} ({OutputHelper.MakeDml($"!savemanagedmodule --address {a} --saveto {moduleSavePath}", $"save")})");
 
                 if (!string.IsNullOrEmpty(options.SaveTo))
                 {
@@ -56,6 +63,27 @@ namespace DnExt.Commands
                     SaveToStream(dataTarget, m.Module, fs, sbr);
                 }
             }
+
+            return sbr.ToString();
+        }
+
+        public static string SaveModule(this DataTarget dataTarget, string args)
+        {
+            if (args.ParseAsCommandLine<SaveModuleOptions>() is var clo && !clo.IsValid)
+            {
+                return clo.Message;
+            }
+
+            var rt = dataTarget.GetRuntime();
+            var options = clo.Options;
+            var module = rt.Modules
+                .FirstOrDefault(m => !string.IsNullOrEmpty(m.AssemblyName)
+                    && m.Address == AddressHelper.ConvertHexAddressToUlong(options.Address));
+            var moduleName = new FileInfo(module.AssemblyName).Name;
+
+            using var fs = new FileStream(Path.Combine(options.SaveTo, moduleName), FileMode.Create);
+            var sbr = new StringBuilder();
+            SaveToStream(dataTarget, module, fs, sbr);
 
             return sbr.ToString();
         }

@@ -19,7 +19,12 @@ namespace DnExt.Exports
 
         [DllExport(CommandNames.GET_MODULES)]
         public static void GetModules([In] IntPtr client, [In, MarshalAs(UnmanagedType.LPStr)] string args) =>
-            client.WriteDmlLine(client.GetDataTarget().GetModules(args).CleanWindbgOutput());
+            client.WriteDmlLine(client.GetDataTarget().GetModules(client, args).CleanWindbgOutput());
+
+        [DllExport(CommandNames.SAVE_MODULE)]
+        public static void SaveModule([In] IntPtr client, [In, MarshalAs(UnmanagedType.LPStr)] string args) =>
+            client.WriteDmlLine(client.GetDataTarget().SaveModule(args).CleanWindbgOutput());
+
 
         [DllExport(CommandNames.DUMP_DATASET)]
         public static void DumpDataSet([In] IntPtr client, [In, MarshalAs(UnmanagedType.LPStr)] string args) =>

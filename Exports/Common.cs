@@ -1,6 +1,6 @@
-﻿using DnExt.Constants;
+﻿using DnExt.Common;
+using DnExt.Constants;
 using RGiesecke.DllExport;
-using DnExt.Common;
 
 namespace DnExt.Exports
 {

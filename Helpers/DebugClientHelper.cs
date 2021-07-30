@@ -3,15 +3,40 @@ using Microsoft.Diagnostics.Runtime;
 using Microsoft.Diagnostics.Runtime.Interop;
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace DnExt.Helpers
 {
     internal static class DebugClientHelper
     {
+        private static bool _initialized = false;
         private static object _IUnknown;
-        private static IDebugControl _debugControl;
+        private static IDebugClient6 _debugClient;
+        private static IDebugControl6 _debugControl;
         private static IDebugSymbols _debugSymbols;
         private static DataTarget _dataTarget;
+
+        internal static string DumpFilePath { get; private set; }
+
+        static void Init(IntPtr debugClientPtr)
+        {
+            if (_initialized)
+            {
+                return;
+            }
+
+            var debugClient = debugClientPtr.GetDebugClient();
+
+            var sbr = new StringBuilder();
+
+            if (debugClient.GetDumpFile(0, sbr, 1024, out _, out var _, out var _) != 0)
+            {
+                return;
+            }
+
+            DumpFilePath = sbr.ToString();
+            _initialized = true;
+        }
 
         private static object GetIUnknown(this IntPtr debugClient)
         {
@@ -23,11 +48,21 @@ namespace DnExt.Helpers
             return _IUnknown;
         }
 
-        internal static IDebugControl GetDebugControl(this IntPtr debugClient)
+        internal static IDebugClient6 GetDebugClient(this IntPtr debugClient)
         {
             if (_debugControl == null)
             {
-                _debugControl = (IDebugControl)debugClient.GetIUnknown();
+                _debugClient = (IDebugClient6)debugClient.GetIUnknown();
+            }
+
+            return _debugClient;
+        }
+
+        internal static IDebugControl6 GetDebugControl(this IntPtr debugClient)
+        {
+            if (_debugControl == null)
+            {
+                _debugControl = (IDebugControl6)debugClient.GetIUnknown();
             }
 
             return _debugControl;
@@ -45,9 +80,11 @@ namespace DnExt.Helpers
 
         internal static DataTarget GetDataTarget(this IntPtr debugClient)
         {
+            Init(debugClient);
+
             if (_dataTarget == null)
             {
-                _dataTarget = DataTarget.CreateFromDebuggerInterface((IDebugClient)debugClient.GetIUnknown());
+                _dataTarget = DataTarget.CreateFromDebuggerInterface(debugClient.GetDebugClient());
             }
 
             return _dataTarget;

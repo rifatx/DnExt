@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DnExt.Constants
+﻿namespace DnExt.Constants
 {
     internal static class CommandNames
     {
@@ -17,5 +11,6 @@ namespace DnExt.Constants
         internal const string DUMP_DATATABLE = "dumpdatatable";
         internal const string HEAP_STAT = "heapstat";
         internal const string GET_MODULES = "getmodules";
+        internal const string SAVE_MODULE = "savemanagedmodule";
     }
 }
