@@ -50,12 +50,11 @@ namespace DnExt.Commands
                 });
 
             var sbr = new StringBuilder();
-            var moduleSavePath = new FileInfo(DebugClientHelper.DumpFilePath).Directory;
 
             foreach (var m in modules.Where(m => matcher.IsMatch(m.Name)))
             {
                 var a = dataTarget.FormatAddress(m.Module.Address);
-                sbr.AppendLine($"{OutputHelper.MakeDml($"!dumpmodule -mt {a}", $"{a}", $": {m.Name}")} ({OutputHelper.MakeDml($"!savemanagedmodule --address {a} --saveto {moduleSavePath}", $"save")})");
+                sbr.AppendLine($"{OutputHelper.MakeDml($"!dumpmodule -mt {a}", $"{a}", $": {m.Name}")} ({OutputHelper.MakeDml($"!savemanagedmodule --address {a} --saveto {Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)}", $"save")})");
 
                 if (!string.IsNullOrEmpty(options.SaveTo))
                 {

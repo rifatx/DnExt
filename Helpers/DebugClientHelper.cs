@@ -9,34 +9,34 @@ namespace DnExt.Helpers
 {
     internal static class DebugClientHelper
     {
-        private static bool _initialized = false;
+        //private static bool _initialized = false;
         private static object _IUnknown;
         private static IDebugClient6 _debugClient;
         private static IDebugControl6 _debugControl;
         private static IDebugSymbols _debugSymbols;
         private static DataTarget _dataTarget;
 
-        internal static string DumpFilePath { get; private set; }
+        //internal static string DumpFilePath { get; private set; }
 
-        static void Init(IntPtr debugClientPtr)
-        {
-            if (_initialized)
-            {
-                return;
-            }
+        //static void Init(IntPtr debugClientPtr)
+        //{
+        //    if (_initialized)
+        //    {
+        //        return;
+        //    }
 
-            var debugClient = debugClientPtr.GetDebugClient();
+        //    var debugClient = debugClientPtr.GetDebugClient();
 
-            var sbr = new StringBuilder();
+        //    var sbr = new StringBuilder();
 
-            if (debugClient.GetDumpFile(0, sbr, 1024, out _, out var _, out var _) != 0)
-            {
-                return;
-            }
+        //    if (debugClient.GetDumpFile(0, sbr, 1024, out _, out var _, out var _) != 0)
+        //    {
+        //        return;
+        //    }
 
-            DumpFilePath = sbr.ToString();
-            _initialized = true;
-        }
+        //    DumpFilePath = sbr.ToString();
+        //    _initialized = true;
+        //}
 
         private static object GetIUnknown(this IntPtr debugClient)
         {
@@ -80,7 +80,7 @@ namespace DnExt.Helpers
 
         internal static DataTarget GetDataTarget(this IntPtr debugClient)
         {
-            Init(debugClient);
+            //Init(debugClient);
 
             if (_dataTarget == null)
             {
